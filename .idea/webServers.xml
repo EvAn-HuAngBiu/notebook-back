@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="c3aa2509-859b-4a2f-aeba-22e4436b7ca8" name="HK_ECS">
+        <fileTransfer rootFolder="/home/list" accessType="SFTP" host="8.210.35.49" port="22" sshConfigId="bd44a2d3-16d8-487d-9ff1-e6d9352c2564" sshConfig="list@8.210.35.49:22 agent" authAgent="true">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>

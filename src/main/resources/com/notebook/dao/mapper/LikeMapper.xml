@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.notebook.dao.mapper.LikeMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.notebook.domain.LikeDo">
+        <id column="like_id" property="likeId" />
+        <result column="user_id" property="userId" />
+        <result column="share_id" property="shareId" />
+        <result column="deleted" property="deleted" />
+        <result column="version" property="version" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        like_id, user_id, share_id, deleted, version
+    </sql>
+
+    <select id="selectUserLikedCount" resultType="Map">
+        SELECT s.user_id, count(*) cnt
+        FROM notebook_like t
+        INNER JOIN notebook_share s ON t.share_id = s.share_id
+        GROUP BY s.user_id
+    </select>
+
+    <select id="selectUserWhoLikedMe" resultType="Map">
+        SELECT s.user_id beliked, t.user_id `like`
+        FROM notebook_like t
+        INNER JOIN notebook_share s ON t.share_id = s.share_id
+    </select>
+</mapper>

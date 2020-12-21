@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.notebook.dao.mapper.ShareVoMapper">
+    <resultMap id="shareBriefVo" type="com.notebook.domain.vo.ShareUserInfoVo">
+        <association property="shareDo" javaType="com.notebook.domain.ShareDo">
+            <id column="s_share_id" property="shareId" />
+            <result column="s_user_id" property="userId" />
+            <result column="s_tag_id" property="tagId" />
+            <result column="s_like_cnt" property="likeCnt" />
+            <result column="s_collect_cnt" property="collectCnt" />
+            <result column="s_add_time" property="addTime" />
+            <result column="s_modify_time" property="modifyTime" />
+            <result column="s_deleted" property="deleted" />
+            <result column="s_version" property="version" />
+        </association>
+        <association property="userDo" javaType="com.notebook.domain.UserDo">
+            <id column="u_user_id" property="userId" />
+            <result column="u_nickname" property="nickname" />
+            <result column="u_gender" property="gender" />
+            <result column="u_last_login_time" property="lastLoginTime" />
+            <result column="u_last_login_ip" property="lastLoginIp" />
+            <result column="u_avatar" property="avatar" />
+            <result column="u_openid" property="openid" />
+            <result column="u_phone" property="phone" />
+            <result column="u_version" property="version" />
+            <result column="u_deleted" property="deleted" />
+        </association>
+    </resultMap>
+
+    <sql id="queryShareAndUser">
+        s.share_id s_share_id, s.user_id s_user_id, s.tag_id s_tag_id, s.like_cnt s_like_cnt, s.collect_cnt s_collect_cnt, s.add_time s_add_time, s.modify_time s_modify_time, s.deleted s_deleted, s.version s_version,
+        u.user_id u_user_id, u.nickname u_nickname, u.avatar u_avatar, u.deleted u_deleted, u.version u_version
+    </sql>
+
+    <!-- 视图类和视图对象不允许删除、修改和添加 -->
+    <select id="selectShareAndUserInfo" resultMap="shareBriefVo">
+        SELECT <include refid="queryShareAndUser" />
+        FROM notebook_share s INNER JOIN notebook_user u ON s.user_id = u.user_id
+        WHERE s.deleted = 0
+    </select>
+
+    <select id="selectShareAndUserInfoById" resultMap="shareBriefVo">
+        SELECT <include refid="queryShareAndUser" />
+        FROM notebook_share s INNER JOIN notebook_user u on s.user_id = u.user_id
+        WHERE s.deleted = 0 AND s.share_id = #{shareId}
+        LIMIT 1;
+    </select>
+
+    <select id="selectShareAndUserInfoOrderByHot" resultMap="shareBriefVo">
+        SELECT <include refid="queryShareAndUser" />, (s.like_cnt + s.collect_cnt) like_sum
+        FROM notebook_share s INNER JOIN notebook_user u on s.user_id = u.user_id
+        WHERE s.deleted = 0
+        <if test="tagId != 0">
+            AND s.tag_id = #{tagId}
+        </if>
+        ORDER BY like_sum DESC
+        LIMIT #{pageStart}, #{pageSize}
+    </select>
+
+    <select id="selectShareAndUserInfoByUser" resultMap="shareBriefVo">
+        SELECT <include refid="queryShareAndUser" />, (s.like_cnt + s.collect_cnt) like_sum
+        FROM notebook_share s INNER JOIN notebook_user u on s.user_id = u.user_id
+        WHERE s.deleted = 0 AND s.user_id = #{userId}
+        ORDER BY s.modify_time DESC, s.add_time DESC
+        LIMIT #{pageStart}, #{pageSize}
+    </select>
+
+    <select id="selectShareAndUserInfoOrderByNew" resultMap="shareBriefVo">
+        SELECT <include refid="queryShareAndUser" />
+        FROM notebook_share s INNER JOIN notebook_user u on s.user_id = u.user_id
+        WHERE s.deleted = 0
+        <if test="tagId != 0">
+            AND s.tag_id = #{tagId}
+        </if>
+        ORDER BY s.add_time DESC, s.modify_time DESC
+        LIMIT #{pageStart}, #{pageSize}
+    </select>
+
+    <select id="selectShareAndUserInfoByShareId" resultMap="shareBriefVo">
+        SELECT <include refid="queryShareAndUser" />
+        FROM notebook_share s INNER JOIN notebook_user u on s.user_id = u.user_id
+        WHERE s.deleted = 0 AND s.share_id = #{shareId}
+        ORDER BY s.add_time DESC, s.modify_time DESC
+        LIMIT 1
+    </select>
+
+    <select id="selectBriefRecordByShareId" resultType="com.notebook.domain.RecordDo">
+        SELECT r.record_id, r.pic_url, r.record_title, r.record_text, r.record_type, r.record_rate FROM notebook_share_record sr
+        INNER JOIN notebook_record r ON sr.record_id = r.record_id
+        WHERE sr.deleted = 0 AND sr.share_id = #{shareId}
+    </select>
+
+    <select id="selectDetailRecordByShareId" resultType="com.notebook.domain.RecordDo">
+        SELECT r.record_id, r.pic_url, r.record_title, r.record_text, r.record_type, r.record_rate, r.add_time, r.modify_time
+        FROM notebook_share_record sr
+        INNER JOIN notebook_record r ON sr.record_id = r.record_id
+        WHERE sr.deleted = 0 AND sr.share_id = #{shareId}
+    </select>
+</mapper>
