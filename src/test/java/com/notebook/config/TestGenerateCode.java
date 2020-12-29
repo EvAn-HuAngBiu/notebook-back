@@ -60,7 +60,7 @@ public class TestGenerateCode {
         strategyConfig.setCapitalMode(true)
                 .setNaming(NamingStrategy.underline_to_camel)
                 .setTablePrefix("notebook_")
-                .setInclude("notebook_comment")
+                .setInclude("notebook_notify")
                 .setEntityLombokModel(true)
                 .setRestControllerStyle(true)
                 .setVersionFieldName("version")

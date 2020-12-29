@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.notebook.dao.mapper.CommentVoMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.notebook.domain.CommentDo">
+        <id column="comment_id" property="commentId" />
+        <result column="comment_type" property="commentType" />
+        <result column="comment_content" property="commentContent" />
+        <result column="user_id" property="userId" />
+        <result column="share_id" property="shareId" />
+        <result column="parent_comment_id" property="parentCommentId" />
+        <result column="add_time" property="addTime" />
+        <result column="deleted" property="deleted" />
+        <result column="version" property="version" />
+    </resultMap>
+
+    <resultMap id="shareCommentVo" type="com.notebook.domain.vo.ShareCommentVo">
+        <association property="commentDo" javaType="com.notebook.domain.CommentDo">
+            <id column="c_comment_id" property="commentId" />
+            <result column="c_comment_type" property="commentType" />
+            <result column="c_comment_content" property="commentContent" />
+            <result column="c_user_id" property="userId" />
+            <result column="c_share_id" property="shareId" />
+            <result column="c_parent_comment_id" property="parentCommentId" />
+            <result column="c_add_time" property="addTime" />
+            <result column="c_deleted" property="deleted" />
+            <result column="c_version" property="version" />
+        </association>
+        <association property="userDo" javaType="com.notebook.domain.UserDo">
+            <id column="u_user_id" property="userId" />
+            <result column="u_nickname" property="nickname" />
+            <result column="u_gender" property="gender" />
+            <result column="u_last_login_time" property="lastLoginTime" />
+            <result column="u_last_login_ip" property="lastLoginIp" />
+            <result column="u_avatar" property="avatar" />
+            <result column="u_openid" property="openid" />
+            <result column="u_phone" property="phone" />
+            <result column="u_version" property="version" />
+            <result column="u_deleted" property="deleted" />
+        </association>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="queryCommentList">
+        c.comment_id c_comment_id, c.comment_type c_comment_type, c.comment_content c_comment_content, c.user_id c_user_id, c.share_id c_share_id, c.parent_comment_id c_parent_comment_id, c.add_time c_add_time, c.deleted c_deleted, c.version c_version
+    </sql>
+    <sql id="queryUserList">
+        u.user_id u_user_id, u.nickname u_nickname, u.avatar u_avatar, u.deleted u_deleted, u.version u_version
+    </sql>
+
+    <select id="selectBriefComments" resultMap="shareCommentVo">
+        SELECT c.share_id c_share_id, c.comment_content c_comment_content, u.nickname u_nickname
+        FROM notebook_comment c INNER JOIN notebook_user u ON c.user_id = u.user_id
+        WHERE c.deleted = 0 AND c.comment_type = 0 AND c.share_id = #{shareId}
+        LIMIT 2
+    </select>
+
+    <select id="countShareComments" resultType="int">
+        SELECT COUNT(*)
+        FROM notebook_comment
+        WHERE deleted = 0 AND comment_type = 0 AND share_id = #{shareId}
+    </select>
+
+    <select id="selectDetailComments" resultMap="shareCommentVo">
+        SELECT <include refid="queryCommentList"/>, <include refid="queryUserList"/>
+        FROM notebook_comment c INNER JOIN notebook_user u ON c.user_id = u.user_id
+        WHERE c.deleted = 0 AND c.comment_type = 0 AND c.share_id = #{shareId}
+        ORDER BY c.add_time ${sortType}
+    </select>
+
+    <select id="selectSubCommentsByShareId" resultMap="shareCommentVo">
+        SELECT <include refid="queryCommentList"/>, u.nickname u_nickname
+        FROM notebook_comment c INNER JOIN notebook_user u ON c.user_id = u.user_id
+        WHERE c.deleted = 0 AND c.comment_type = 1 AND c.share_id = #{shareId}
+    </select>
+
+    <select id="selectSubCommentsCount" resultType="int">
+        SELECT COUNT(*)
+        FROM notebook_comment c
+        WHERE c.deleted = 0 AND c.parent_comment_id = #{commentId}
+    </select>
+</mapper>

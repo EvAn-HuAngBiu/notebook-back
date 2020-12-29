@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.notebook.dao.mapper.NotifyVoMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.notebook.domain.NotifyDo">
+        <id column="notify_id" property="notifyId" />
+        <result column="share_id" property="shareId" />
+        <result column="comment_id" property="commentId" />
+        <result column="notify_user_id" property="notifyUserId" />
+        <result column="comment_user_id" property="commentUserId" />
+        <result column="read_type" property="readType" />
+        <result column="add_time" property="addTime" />
+        <result column="deleted" property="deleted" />
+        <result column="version" property="version" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        notify_id, comment_id, notify_user_id, read_type, add_time, deleted, version
+    </sql>
+
+    <select id="selectNotifyByUserId" resultType="com.notebook.domain.dto.NotifyBriefDto">
+        SELECT n.notify_id, n.notify_user_id, n.read_type, n.add_time, c.comment_content, s.share_id
+        FROM notebook_notify n
+        INNER JOIN notebook_comment c ON n.comment_id = c.comment_id
+        INNER JOIN notebook_user u on c.user_id = u.user_id
+        INNER JOIN notebook_share s on c.share_id = s.share_id
+        WHERE n.deleted = 0 AND n.notify_user_id = #{userId}
+        ORDER BY n.add_time DESC
+        LIMIT #{pageStart}, #{pageSize}
+    </select>
+
+    <select id="checkHasUnread" resultType="int">
+        SELECT 1
+        FROM notebook_notify
+        WHERE deleted = 0 AND notify_user_id = #{userId} AND read_type = 0
+        LIMIT 1
+    </select>
+</mapper>

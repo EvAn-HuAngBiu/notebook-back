@@ -6,8 +6,12 @@ import com.baomidou.mybatisplus.annotation.Version;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableLogic;
 import java.io.Serializable;
+import java.time.LocalDateTime;
+
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 
 /**
  * <p>
@@ -20,6 +24,8 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(callSuper = false)
 @TableName("notebook_comment")
+@NoArgsConstructor
+@AllArgsConstructor
 public class CommentDo implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -54,6 +60,11 @@ public class CommentDo implements Serializable {
      * 父评论ID
      */
     private Integer parentCommentId;
+
+    /**
+     * 添加时间
+     */
+    private LocalDateTime addTime;
 
     /**
      * 逻辑删除

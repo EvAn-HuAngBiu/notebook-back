@@ -3,14 +3,12 @@ package com.notebook.service;
 import com.notebook.config.storage.FileStorageService;
 import com.notebook.dao.cache.CachedCollectDao;
 import com.notebook.dao.cache.CachedLikeDao;
+import com.notebook.dao.mapper.CommentVoMapper;
 import com.notebook.dao.mapper.ShareVoMapper;
 import com.notebook.domain.RecordDo;
 import com.notebook.domain.vo.ShareBriefVo;
+import com.notebook.domain.vo.ShareCommentVo;
 import com.notebook.domain.vo.ShareUserInfoVo;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -30,13 +28,16 @@ public class ShareVoService {
     private final CachedLikeDao cachedLikeDao;
     private final CachedCollectDao cachedCollectDao;
     private final FileStorageService fileStorageService;
+    private final CommentVoMapper commentVoMapper;
 
     public ShareVoService(ShareVoMapper shareVoMapper, CachedLikeDao cachedLikeDao,
-                          FileStorageService fileStorageService, CachedCollectDao cachedCollectDao) {
+                          FileStorageService fileStorageService, CachedCollectDao cachedCollectDao,
+                          CommentVoMapper commentVoMapper) {
         this.shareVoMapper = shareVoMapper;
         this.cachedLikeDao = cachedLikeDao;
         this.fileStorageService = fileStorageService;
         this.cachedCollectDao = cachedCollectDao;
+        this.commentVoMapper = commentVoMapper;
     }
 
     private List<ShareBriefVo> handleShareBriefVos(List<ShareUserInfoVo> shareUserInfoVos) {
@@ -47,8 +48,11 @@ public class ShareVoService {
         List<ShareBriefVo> result = new ArrayList<>(shareUserInfoVos.size());
         shareUserInfoVos.forEach(su -> {
             List<RecordDo> record = shareVoMapper.selectBriefRecordByShareId(su.getShareDo().getShareId());
+            List<ShareCommentVo> comments = commentVoMapper.selectBriefComments(su.getShareDo().getShareId());
+            int totalComments = commentVoMapper.countShareComments(su.getShareDo().getShareId());
             record.forEach(s -> s.setPicUrl(fileStorageService.generateUrls(s.getPicUrl())));
-            result.add(new ShareBriefVo(su.getShareDo(), su.getUserDo(), record, false, false));
+            result.add(new ShareBriefVo(su.getShareDo(), su.getUserDo(), record, false,
+                    false, comments, totalComments));
         });
         return result;
     }
@@ -83,7 +87,10 @@ public class ShareVoService {
         shareUserInfoVo.getShareDo().setLikeCnt(cachedLikeDao.getRecordLikes(
                 shareUserInfoVo.getShareDo().getShareId()));
         List<RecordDo> recordDo = shareVoMapper.selectBriefRecordByShareId(shareUserInfoVo.getShareDo().getShareId());
-        return new ShareBriefVo(shareUserInfoVo.getShareDo(), shareUserInfoVo.getUserDo(), recordDo, false, false);
+        List<ShareCommentVo> comments = commentVoMapper.selectBriefComments(shareUserInfoVo.getShareDo().getShareId());
+        int totalComments = commentVoMapper.countShareComments(shareUserInfoVo.getShareDo().getShareId());
+        return new ShareBriefVo(shareUserInfoVo.getShareDo(), shareUserInfoVo.getUserDo(),
+                recordDo, false, false, comments, totalComments);
     }
 
     public void handleShareLikeAndCollect(List<ShareBriefVo> shareBriefVos, Integer userId) {

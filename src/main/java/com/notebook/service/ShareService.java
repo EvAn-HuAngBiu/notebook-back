@@ -18,4 +18,5 @@ public interface ShareService extends IService<ShareDo> {
 
     boolean decreaseShareCollect(Integer shareId);
 
+    Integer getUserIdByShareId(Integer shareId);
 }

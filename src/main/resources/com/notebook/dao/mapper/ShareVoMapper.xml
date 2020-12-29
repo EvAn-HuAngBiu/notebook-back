@@ -96,4 +96,12 @@
         INNER JOIN notebook_record r ON sr.record_id = r.record_id
         WHERE sr.deleted = 0 AND sr.share_id = #{shareId}
     </select>
+
+    <select id="selectOneRecordFromShare" resultType="com.notebook.domain.RecordDo">
+        SELECT r.record_title, r.record_type
+        FROM notebook_share_record sr
+        INNER JOIN notebook_record r ON sr.record_id = r.record_id
+        WHERE sr.deleted = 0 AND sr.share_id = #{shareId}
+        LIMIT 1
+    </select>
 </mapper>

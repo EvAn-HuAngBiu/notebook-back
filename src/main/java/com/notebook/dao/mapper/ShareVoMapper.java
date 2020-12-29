@@ -3,7 +3,6 @@ package com.notebook.dao.mapper;
 import com.notebook.domain.RecordDo;
 import com.notebook.domain.vo.ShareUserInfoVo;
 import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Select;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -38,4 +37,6 @@ public interface ShareVoMapper {
     List<RecordDo> selectBriefRecordByShareId(@Param("shareId") Integer shareId);
 
     List<RecordDo> selectDetailRecordByShareId(@Param("shareId") Integer shareId);
+
+    RecordDo selectOneRecordFromShare(@Param("shareId") Integer shareId);
 }

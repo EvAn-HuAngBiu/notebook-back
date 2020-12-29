@@ -36,4 +36,10 @@ public class ShareServiceImpl extends ServiceImpl<ShareMapper, ShareDo> implemen
         share.setCollectCnt(Optional.ofNullable(share.getCollectCnt()).orElse(0) - 1);
         return this.update(share, new LambdaQueryWrapper<ShareDo>().eq(ShareDo::getShareId, shareId));
     }
+
+    @Override
+    public Integer getUserIdByShareId(Integer shareId) {
+        return this.getOne(new LambdaQueryWrapper<ShareDo>().select(ShareDo::getUserId)
+                .eq(ShareDo::getShareId, shareId).last("LIMIT 1")).getUserId();
+    }
 }
