@@ -7,7 +7,7 @@ import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 
 /**
  * Project: notebook
- * File: RedisListnerConfig
+ * File: RedisListenerConfig
  *
  * @author evan
  * @date 2020/11/9

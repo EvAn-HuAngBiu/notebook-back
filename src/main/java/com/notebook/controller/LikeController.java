@@ -1,7 +1,6 @@
 package com.notebook.controller;
 
 
-import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.notebook.config.CheckLogin;
 import com.notebook.config.NeedLogin;
 import com.notebook.dao.cache.CachedLikeDao;
@@ -12,7 +11,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 

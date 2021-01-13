@@ -1,25 +1,18 @@
 package com.notebook.controller;
 
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.notebook.config.NeedLogin;
-import com.notebook.dao.mapper.CommentVoMapper;
 import com.notebook.domain.CommentDo;
-import com.notebook.domain.NotifyDo;
 import com.notebook.domain.SwanRequestBody;
 import com.notebook.domain.dto.SwanBriefCommentDto;
-import com.notebook.domain.vo.ShareCommentVo;
 import com.notebook.service.CommentService;
 import com.notebook.service.NotifyService;
 import com.notebook.service.ShareService;
 import com.notebook.util.ReturnCode;
 import com.notebook.util.ReturnResult;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
 
 /**
  * <p>

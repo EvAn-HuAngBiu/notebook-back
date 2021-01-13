@@ -1,12 +1,10 @@
 package com.notebook.config.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.notebook.config.storage.FileStorageService;
 import lombok.SneakyThrows;
 import org.apache.ibatis.type.BaseTypeHandler;
 import org.apache.ibatis.type.JdbcType;
 import org.apache.ibatis.type.MappedJdbcTypes;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.sql.CallableStatement;
 import java.sql.PreparedStatement;

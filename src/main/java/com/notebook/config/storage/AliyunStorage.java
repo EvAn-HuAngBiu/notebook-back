@@ -67,7 +67,6 @@ public class AliyunStorage implements IStorage {
                 ossClient.shutdown();
             }
         }
-        // storeAsync(inputStream, contentLength, contentType, keyName);
     }
 
     @Override

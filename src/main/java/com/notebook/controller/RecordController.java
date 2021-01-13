@@ -6,7 +6,9 @@ import com.notebook.config.NeedLogin;
 import com.notebook.config.storage.FileStorageService;
 import com.notebook.domain.RecordDo;
 import com.notebook.domain.SwanRequestBody;
-import com.notebook.service.*;
+import com.notebook.service.AuditService;
+import com.notebook.service.RecordService;
+import com.notebook.service.StorageService;
 import com.notebook.util.ReturnCode;
 import com.notebook.util.ReturnResult;
 import lombok.extern.slf4j.Slf4j;
@@ -16,7 +18,6 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletResponse;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -80,17 +81,12 @@ public class RecordController {
 
     @NeedLogin
     @PostMapping("/add")
-    public ReturnResult addRecords(@RequestBody SwanRequestBody<RecordDo> requestBody,
-                                   HttpServletResponse resp) {
+    public ReturnResult addRecords(@RequestBody SwanRequestBody<RecordDo> requestBody) {
         RecordDo recordDo = requestBody.getData();
         recordDo.setUserId(requestBody.getUserId());
         recordDo.setAddTime(LocalDateTime.now());
         recordDo.setModifyTime(LocalDateTime.now());
         boolean result = recordService.save(recordDo);
-        // if (result) {
-        //     // 当数据库操作成功时，删除临时区的文件信息
-        //     storageService.deleteTempCache(recordDo.getPicUrl().toArray(String[]::new));
-        // }
         auditService.auditRecord(recordDo);
         return ReturnResult.newInstance().setCode(result ? ReturnCode.SUCCESS : ReturnCode.INTERNAL_ERROR)
                 .putData("recordId", recordDo.getRecordId());
@@ -98,8 +94,7 @@ public class RecordController {
 
     @NeedLogin
     @PostMapping("/delete")
-    public ReturnResult deleteRecord(@RequestBody SwanRequestBody<Integer> requestBody,
-                                     HttpServletResponse response) {
+    public ReturnResult deleteRecord(@RequestBody SwanRequestBody<Integer> requestBody) {
         Integer recordId = requestBody.getData();
         if (recordId == null) {
             return ReturnResult.newInstance().setCode(ReturnCode.PARAM_NOT_COMPLETE);
@@ -139,8 +134,7 @@ public class RecordController {
 
     @NeedLogin
     @PostMapping("/update")
-    public ReturnResult updateRecord(@RequestBody SwanRequestBody<RecordDo> requestBody,
-                                     HttpServletResponse resp) {
+    public ReturnResult updateRecord(@RequestBody SwanRequestBody<RecordDo> requestBody) {
         RecordDo record = requestBody.getData();
         if (record == null || record.getRecordId() == null) {
             // 若更新的实体或实体ID为空则返回参数完整错误
