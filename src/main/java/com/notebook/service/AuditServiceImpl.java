@@ -1,16 +1,15 @@
 package com.notebook.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.type.CollectionType;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.notebook.config.storage.FileStorageService;
+import com.notebook.dao.mapper.ShareVoMapper;
 import com.notebook.domain.RecordDo;
+import com.notebook.domain.ShareDo;
 import com.notebook.domain.dto.AuditPenaltyResult;
-import io.netty.util.internal.StringUtil;
+import com.notebook.util.AuditLabel;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.BooleanUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -27,33 +26,36 @@ import java.util.*;
 @Slf4j
 @Service
 public class AuditServiceImpl implements AuditService {
-    public static final String AUDIT_PREFIX = "notebook:audit";
-
-    /**
-     * 保存内容审核结果
-     * 格式 hash userId->Result(JSON)
-     * */
-    public static final String AUDIT_RESULT = AUDIT_PREFIX + "result";
+    public static final String AUDIT_IMAGE_RESULT = "audit:image";
+    public static final String AUDIT_TEXT_RESULT = "audit:text";
 
     private final RabbitTemplate rabbitTemplate;
     private final StringRedisTemplate redisTemplate;
+    private final FileStorageService fileStorageService;
+    private final RecordService recordService;
+    private final ShareVoMapper shareVoMapper;
 
-    public AuditServiceImpl(RabbitTemplate rabbitTemplate, StringRedisTemplate redisTemplate) {
+    public AuditServiceImpl(RabbitTemplate rabbitTemplate, StringRedisTemplate redisTemplate,
+                            FileStorageService fileStorageService, RecordService recordService,
+                            ShareVoMapper shareVoMapper) {
         this.rabbitTemplate = rabbitTemplate;
         this.redisTemplate = redisTemplate;
+        this.fileStorageService = fileStorageService;
+        this.recordService = recordService;
+        this.shareVoMapper = shareVoMapper;
     }
 
+    @Async("uploadThreadPool")
     @Override
     public void auditRecord(RecordDo recordDo) {
-        submitTextAudit(recordDo.getRecordTitle(), recordDo.getUserId(), recordDo.getRecordId());
-        submitTextAudit(recordDo.getRecordText(), recordDo.getUserId(), recordDo.getRecordId());
-        recordDo.getPicUrl().forEach(image -> {
-            submitImageAudit(image, recordDo.getUserId(), recordDo.getRecordId());
-        });
+            submitTextAudit(List.of(recordDo.getRecordTitle(), recordDo.getRecordText()),
+                    recordDo.getUserId(), recordDo.getRecordId());
+            recordDo.getPicUrl().forEach(image -> submitImageAudit(fileStorageService.generateUrl(image),
+                    recordDo.getUserId(), recordDo.getRecordId()));
     }
 
     @Override
-    public void submitTextAudit(String text, Integer userId, Integer recordId) {
+    public void submitTextAudit(List<String> text, Integer userId, Integer recordId) {
         Map<String, Object> queryMap = new HashMap<>(3);
         queryMap.put("payload", text);
         queryMap.put("userId", userId);
@@ -72,25 +74,34 @@ public class AuditServiceImpl implements AuditService {
 
     @Override
     public List<AuditPenaltyResult> fetchAuditResult(Integer userId) {
-        List<AuditPenaltyResult> list = new ArrayList<>();
-        String result = ((String) redisTemplate.opsForHash().get(AUDIT_RESULT, userId.toString()));
-        if (StringUtils.isBlank(result)) {
-            return List.of();
+        String imageKey =  AUDIT_IMAGE_RESULT + userId;
+        String textKey = AUDIT_TEXT_RESULT + userId;
+        List<AuditPenaltyResult> result = getAuditResultsByKey(imageKey, userId);
+        result.addAll(getAuditResultsByKey(textKey, userId));
+        return result;
+    }
+
+    private List<AuditPenaltyResult> getAuditResultsByKey(String key, Integer userId) {
+        List<AuditPenaltyResult> results = new ArrayList<>();
+        HashOperations<String, Object, Object> hashOperations = redisTemplate.opsForHash();
+        List<Object> imageHashKeys = List.copyOf(hashOperations.keys(key));
+        if (!imageHashKeys.isEmpty()) {
+            List<Object> imageHashValues = hashOperations.multiGet(key, imageHashKeys);
+            for (int i = 0; i < imageHashKeys.size(); ++i) {
+                AuditPenaltyResult auditResult = new AuditPenaltyResult();
+                auditResult.setUserId(userId);
+                auditResult.setRecordId(Integer.parseInt(((String) imageHashKeys.get(i))));
+                auditResult.setAuditLabel(imageHashValues.get(i).toString());
+                auditResult.setAuditResult(AuditLabel.getByLabel(auditResult.getAuditLabel()));
+                auditResult.setRecordTitle(recordService.getOne(new LambdaQueryWrapper<RecordDo>()
+                        .select(RecordDo::getRecordTitle)
+                        .eq(RecordDo::getRecordId, auditResult.getRecordId())
+                        .last("LIMIT 1")).getRecordTitle());
+                results.add(auditResult);
+                recordService.deleteRelatedRecordByRecordId(auditResult.getRecordId());
+            }
+            redisTemplate.delete(key);
         }
-        ObjectMapper mapper = new ObjectMapper();
-        CollectionType collectionType = mapper.getTypeFactory().constructCollectionType(List.class, Map.class);
-        try {
-            List<Map> resultJsonList = mapper.readValue(result, collectionType);
-            resultJsonList.forEach(l -> {
-                list.add(new AuditPenaltyResult(userId, ((Integer) l.get("recordId")),
-                        ((String) l.get("auditResult"))));
-            });
-            return list;
-        } catch (JsonProcessingException e) {
-            log.error(e.getMessage());
-            log.error(Arrays.toString(e.getStackTrace()));
-            e.printStackTrace();
-            return List.of();
-        }
+        return results;
     }
 }

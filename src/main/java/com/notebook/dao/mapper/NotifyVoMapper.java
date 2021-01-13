@@ -8,7 +8,7 @@ import java.util.List;
 
 @Repository
 public interface NotifyVoMapper {
-    int checkHasUnread(@Param("userId") Integer userId);
+    Integer checkHasUnread(@Param("userId") Integer userId);
 
     List<NotifyBriefDto> selectNotifyByUserId(@Param("userId") Integer userId,
                                               @Param("pageStart") Integer pageStart,

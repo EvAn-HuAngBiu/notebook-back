@@ -26,6 +26,19 @@
             <result column="u_deleted" property="deleted" />
         </association>
     </resultMap>
+    <resultMap id="recordDo" type="com.notebook.domain.RecordDo">
+        <id column="record_id" property="recordId"/>
+        <result column="user_id" property="userId" />
+        <result column="tag_id" property="tagId"/>
+        <result column="pic_url" property="picUrl" typeHandler="com.notebook.config.handler.JsonArrayTypeHandler"/>
+        <result column="record_title" property="recordTitle" />
+        <result column="record_text" property="recordText" />
+        <result column="record_type" property="recordType"/>
+        <result column="add_time" property="addTime"/>
+        <result column="modify_time" property="modifyTime"/>
+        <result column="deleted" property="deleted"/>
+        <result column="version" property="version"/>
+    </resultMap>
 
     <sql id="queryShareAndUser">
         s.share_id s_share_id, s.user_id s_user_id, s.tag_id s_tag_id, s.like_cnt s_like_cnt, s.collect_cnt s_collect_cnt, s.add_time s_add_time, s.modify_time s_modify_time, s.deleted s_deleted, s.version s_version,
@@ -84,24 +97,31 @@
         LIMIT 1
     </select>
 
-    <select id="selectBriefRecordByShareId" resultType="com.notebook.domain.RecordDo">
+    <select id="selectBriefRecordByShareId" resultMap="recordDo">
         SELECT r.record_id, r.pic_url, r.record_title, r.record_text, r.record_type, r.record_rate FROM notebook_share_record sr
         INNER JOIN notebook_record r ON sr.record_id = r.record_id
         WHERE sr.deleted = 0 AND sr.share_id = #{shareId}
     </select>
 
-    <select id="selectDetailRecordByShareId" resultType="com.notebook.domain.RecordDo">
+    <select id="selectDetailRecordByShareId" resultMap="recordDo">
         SELECT r.record_id, r.pic_url, r.record_title, r.record_text, r.record_type, r.record_rate, r.add_time, r.modify_time
         FROM notebook_share_record sr
         INNER JOIN notebook_record r ON sr.record_id = r.record_id
         WHERE sr.deleted = 0 AND sr.share_id = #{shareId}
     </select>
 
-    <select id="selectOneRecordFromShare" resultType="com.notebook.domain.RecordDo">
+    <select id="selectOneRecordFromShare" resultMap="recordDo">
         SELECT r.record_title, r.record_type
         FROM notebook_share_record sr
         INNER JOIN notebook_record r ON sr.record_id = r.record_id
         WHERE sr.deleted = 0 AND sr.share_id = #{shareId}
         LIMIT 1
+    </select>
+
+    <select id="selectRecordByShareId" resultMap="recordDo">
+        SELECT r.record_id, r.record_title, r.record_text
+        FROM notebook_share_record sr
+                 INNER JOIN notebook_record r ON sr.record_id = r.record_id
+        WHERE sr.deleted = 0 AND sr.share_id = #{shareId}
     </select>
 </mapper>

@@ -19,5 +19,9 @@ public class AuditPenaltyResult {
 
     private Integer recordId;
 
+    private String recordTitle;
+
+    private String auditLabel;
+
     private String auditResult;
 }

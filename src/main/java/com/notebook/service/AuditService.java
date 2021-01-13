@@ -1,6 +1,7 @@
 package com.notebook.service;
 
 import com.notebook.domain.RecordDo;
+import com.notebook.domain.ShareDo;
 import com.notebook.domain.dto.AuditPenaltyResult;
 
 import java.util.List;
@@ -11,7 +12,7 @@ import java.util.List;
 public interface AuditService {
     void auditRecord(RecordDo recordDo);
 
-    void submitTextAudit(String text, Integer userId, Integer recordId);
+    void submitTextAudit(List<String> text, Integer userId, Integer recordId);
 
     void submitImageAudit(String imageUrl, Integer userId, Integer recordId);
 

@@ -33,4 +33,4 @@ temp-storage/*
 target/*
 
 # Test file
-src/test/java/*
+TestGenerateCode.java

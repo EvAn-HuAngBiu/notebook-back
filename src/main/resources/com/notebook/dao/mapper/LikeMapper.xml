@@ -20,6 +20,7 @@
         SELECT s.user_id, count(*) cnt
         FROM notebook_like t
         INNER JOIN notebook_share s ON t.share_id = s.share_id
+        WHERE s.deleted = 0
         GROUP BY s.user_id
     </select>
 

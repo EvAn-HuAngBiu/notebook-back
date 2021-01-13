@@ -29,6 +29,10 @@ public class NotifyBriefDto {
 
     private LocalDateTime addTime;
 
+    private String nickName;
+
+    private String avatar;
+
     private String recordTitle;
 
     private Integer recordType;

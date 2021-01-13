@@ -2,6 +2,7 @@ package com.notebook.service;
 
 import com.notebook.dao.mapper.NotifyVoMapper;
 import com.notebook.dao.mapper.ShareVoMapper;
+import com.notebook.domain.CommentDo;
 import com.notebook.domain.NotifyDo;
 import com.notebook.dao.mapper.NotifyMapper;
 import com.notebook.domain.RecordDo;
@@ -11,6 +12,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -40,5 +42,17 @@ public class NotifyServiceImpl extends ServiceImpl<NotifyMapper, NotifyDo> imple
             n.setRecordType(record.getRecordType());
         });
         return notifyBriefs;
+    }
+
+    @Override
+    public Boolean checkHasNewNotify(Integer userId) {
+        return notifyVoMapper.checkHasUnread(userId) != null;
+    }
+
+    @Override
+    public Boolean saveFromComment(CommentDo commentDo, Integer targetUserId) {
+        NotifyDo notifyDo = new NotifyDo(null, commentDo.getCommentId(),
+                targetUserId, false, LocalDateTime.now(), false, 0);
+        return this.save(notifyDo);
     }
 } 

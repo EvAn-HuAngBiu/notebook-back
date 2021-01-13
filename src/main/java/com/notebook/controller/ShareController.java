@@ -71,6 +71,7 @@ public class ShareController {
                                        @RequestParam(name = "page", defaultValue = "1") Integer page,
                                        @RequestParam(name = "size", defaultValue = "10") Integer size) {
         List<ShareBriefVo> shareBrief = shareVoService.getShareBriefVoOrderByNew(tagId, page, size);
+        System.out.println(shareBrief);
         Integer userId = requestBody.getUserId();
         if (userId != null) {
             shareVoService.handleShareLikeAndCollect(shareBrief, userId);
@@ -103,16 +104,13 @@ public class ShareController {
     @CheckLogin
     @GetMapping("/specify")
     public ReturnResult getSpecifyShare(SwanRequestBody<?> requestBody, @RequestParam Integer shareId) {
-        boolean isLiked = requestBody.getUserId() != null &&
-                cachedLikeDao.checkIsLike(requestBody.getUserId(), shareId);
-        // boolean isCollected = requestBody.getUserId() != null &&
-        //         collectService.checkWhetherUserCollectBatchByShareId(requestBody.getUserId(), List.of(shareId)).get(0);
-        boolean isCollected = requestBody.getUserId() != null &&
-                cachedCollectDao.checkIsCollect(requestBody.getUserId(), shareId);
+        ShareBriefVo shareBrief = shareVoService.getSpecifyShare(shareId);
+        Integer userId  = requestBody.getUserId();
+        if (userId != null) {
+            shareVoService.handleShareLikeAndCollect(List.of(shareBrief), userId);
+        }
         return ReturnResult.newInstance().setCode(ReturnCode.SUCCESS)
-                .putData("specify", shareVoService.getSpecifyShare(shareId))
-                .putData("liked", isLiked)
-                .putData("collected", isCollected);
+                .putData("share", shareBrief);
     }
 
     @NeedLogin
@@ -235,7 +233,6 @@ public class ShareController {
                         "Cannot update time for shareId %s, domain is %s", shareId, shareDo));
             }
 
-            // TODO: 批量删除旧记录再重新添加，可能会导致已经刷出来的数据不一致
             // 删除旧记录
             boolean deleteOldResult = this.shareRecordService.remove(
                     new QueryWrapper<ShareRecordDo>().eq("share_id", shareId));

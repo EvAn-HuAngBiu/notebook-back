@@ -20,4 +20,6 @@ public interface RecordService extends IService<RecordDo> {
     Page<RecordDo> newListPagedRecord(Integer userId, Integer recordType, Integer tagId, Integer page, Integer size, Integer sortType);
 
     boolean updateEntityById(RecordDo record);
+
+    void deleteRelatedRecordByRecordId(Integer recordId);
 }

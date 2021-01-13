@@ -86,7 +86,8 @@ public class RedisLikeDaoImpl implements CachedLikeDao {
                 .select(LikeDo::getShareId, LikeDo::getUserId));
         likes.stream().collect(Collectors.groupingBy(LikeDo::getUserId,
                 Collectors.mapping(l -> l.getShareId().toString(), Collectors.toSet())))
-                .forEach((k, v) -> setOperations.add(USER_LIKED_SHARE + k.toString(), v.toArray(String[]::new)));
+                .forEach((k, v) -> setOperations.add(USER_LIKED_SHARE + k.toString(),
+                        v.toArray(String[]::new)));
 
         // 加载记录的总点赞数
         HashOperations<String, Object, Object> hashOperations = this.template.opsForHash();
@@ -112,6 +113,7 @@ public class RedisLikeDaoImpl implements CachedLikeDao {
         this.template.delete(TOTAL_LIKE_COUNT);
         this.template.delete(LIKE_ME_TOTAL_COUNT);
         this.template.delete(OPERATION_RECORDER);
+        this.template.delete(NEW_LINKE_COUNTER);
     }
 
     @Scheduled(cron = "0 0 0/1 * * ?")
@@ -125,7 +127,8 @@ public class RedisLikeDaoImpl implements CachedLikeDao {
             try {
                 Map<String, Integer> map = mapper.readValue(op, Map.class);
                 if (map.get("type") == 0) {
-                    this.likeService.save(new LikeDo(null, map.get("userId"), map.get("shareId"), false, 0));
+                    this.likeService.save(new LikeDo(null, map.get("userId"), map.get("shareId"),
+                            false, 0));
                 } else {
                     this.likeService.remove(new LambdaQueryWrapper<LikeDo>()
                             .eq(LikeDo::getUserId, map.get("userId"))

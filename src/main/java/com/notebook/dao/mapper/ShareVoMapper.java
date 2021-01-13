@@ -39,4 +39,6 @@ public interface ShareVoMapper {
     List<RecordDo> selectDetailRecordByShareId(@Param("shareId") Integer shareId);
 
     RecordDo selectOneRecordFromShare(@Param("shareId") Integer shareId);
+
+    List<RecordDo> selectRecordByShareId(@Param("shareId") Integer shareId);
 }

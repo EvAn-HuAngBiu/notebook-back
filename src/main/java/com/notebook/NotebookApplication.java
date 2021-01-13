@@ -16,7 +16,6 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
  */
 @SpringBootApplication
 @MapperScan("com.notebook.dao.mapper")
-@EnableCaching
 @EnableTransactionManagement
 @EnableScheduling
 public class NotebookApplication {

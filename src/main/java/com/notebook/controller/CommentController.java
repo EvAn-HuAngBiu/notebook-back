@@ -59,10 +59,8 @@ public class CommentController {
                 data.getShareId(), null, LocalDateTime.now(), false, 0);
         boolean result = commentService.save(comment);
         if (result) {
-            NotifyDo notifyDo = new NotifyDo(null, comment.getCommentId(),
-                    shareService.getUserIdByShareId(data.getShareId()), false, LocalDateTime.now(), false, 0);
-            if (!notifyService.save(notifyDo)) {
-                log.error("Cannot write notify {}", notifyDo);
+            if (!notifyService.saveFromComment(comment, shareService.getUserIdByShareId(data.getShareId()))) {
+                log.error("Cannot write notify for comment {}", comment);
             }
         }
         return ReturnResult.newInstance().setCode(result ? ReturnCode.SUCCESS : ReturnCode.INTERNAL_ERROR);
@@ -78,10 +76,8 @@ public class CommentController {
         comment.setVersion(0);
         boolean result = commentService.save(comment);
         if (result) {
-            NotifyDo notifyDo = new NotifyDo(null, comment.getCommentId(),
-                    shareService.getUserIdByShareId(comment.getShareId()), false, LocalDateTime.now(), false, 0);
-            if (!notifyService.save(notifyDo)) {
-                log.error("Cannot write notify {}", notifyDo);
+            if (!notifyService.saveFromComment(comment, shareService.getUserIdByShareId(comment.getShareId()))) {
+                log.error("Cannot write notify for comment {}", comment);
             }
         }
         return ReturnResult.newInstance().setCode(result ? ReturnCode.SUCCESS : ReturnCode.INTERNAL_ERROR);

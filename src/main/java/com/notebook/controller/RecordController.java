@@ -38,10 +38,8 @@ public class RecordController {
     private final PlatformTransactionManager txManager;
     private final AuditService auditService;
 
-
     public RecordController(RecordService recordService, StorageService storageService,
-                            FileStorageService fileStorageService, ShareRecordService shareRecordService,
-                            ShareService shareService, AuditService auditService,
+                            FileStorageService fileStorageService, AuditService auditService,
                             PlatformTransactionManager txManager) {
         this.recordService = recordService;
         this.storageService = storageService;
@@ -72,7 +70,6 @@ public class RecordController {
                                     @RequestParam(defaultValue = "1") Integer page,
                                     @RequestParam(defaultValue = "10") Integer size) {
         Integer userId = requestBody.getUserId();
-        // Page<RecordDo> queryObj = this.recordService.listPagedRecordByUserIdAndTagId(userId, tagId, page, size, sortType);
         Page<RecordDo> queryObj = this.recordService.newListPagedRecord(userId, recordType, tagId, page, size, sortType);
         List<RecordDo> result = queryObj.getRecords();
         result.forEach(s -> s.setPicUrl(fileStorageService.generateUrls(s.getPicUrl())));

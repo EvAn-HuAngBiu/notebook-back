@@ -78,6 +78,4 @@ public class ShareDo implements Serializable {
     @Version
     @JsonIgnore
     private Integer version;
-
-
 }
